@@ -2,16 +2,42 @@
 
 Small Pi extension package for opening generated Markdown outputs in VS Code.
 
-Current features:
-- tracks the most recent successful `.md` file written or edited in the current Pi session
-- `/open-last-md` opens the last tracked markdown file in VS Code
-- `/open-md <path>` opens a specific markdown file in VS Code
-- `open_markdown_output` lets the agent open a markdown file when explicitly asked
+## Features
 
-Notes:
-- version 1 keeps state only for the current session
-- this package is intentionally operator-focused and lightweight
-- it assumes the `code` CLI is available on the machine
+- Tracks the most recent successful `.md` file written or edited in the current Pi session.
+- `/open-last-md` opens the last tracked Markdown file in VS Code.
+- `/open-md <path>` opens a specific Markdown file in VS Code.
+- `open_markdown_output` lets the agent open a Markdown file when explicitly asked.
+
+## Requirements
+
+- Pi Coding Agent
+- VS Code `code` CLI available on `PATH`
+
+## Install
+
+From GitHub:
+
+```bash
+pi install git:git@github.com:aefreedman/pi-markdown-utility.git
+```
+
+Local development install:
+
+```bash
+pi install <path-to-pi-markdown-utility>
+```
+
+Project-local install:
+
+```bash
+pi install -l <path-to-pi-markdown-utility>
+```
+
+## Notes
+
+- State is session-local; restarting Pi clears the last-output pointer.
+- The package is intentionally operator-focused and lightweight.
 
 ## License
 
