@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1 - 2026-07-02
+
+- Changed the Windows Terminal glow launcher to prefer PowerShell 7 (`pwsh.exe`) and fall back to Windows PowerShell when unavailable.
+
 ## 0.2.0 - 2026-07-02
 
 - Added configurable Markdown opener support via `markdownUtility.openWith`.

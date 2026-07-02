@@ -31,7 +31,7 @@ Supported values:
 
 - Pi Coding Agent
 - For `openWith: "code"`: VS Code `code` CLI available on `PATH`
-- For `openWith: "glow"`: `glow` CLI available on `PATH` and a terminal launcher available (`wt.exe`/Windows Terminal on Windows, Terminal on macOS, or a common Linux terminal such as `x-terminal-emulator`, `gnome-terminal`, `konsole`, or `xterm`)
+- For `openWith: "glow"`: `glow` CLI available on `PATH` and a terminal launcher available (`wt.exe`/Windows Terminal on Windows, Terminal on macOS, or a common Linux terminal such as `x-terminal-emulator`, `gnome-terminal`, `konsole`, or `xterm`). On Windows, the launcher prefers PowerShell 7 (`pwsh.exe`) and falls back to Windows PowerShell.
 
 ## Install
 

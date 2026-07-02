@@ -253,18 +253,24 @@ export default function markdownOutputTools(pi: ExtensionAPI) {
     return { opener: "code" };
   }
 
-  async function openWithGlow(absolutePath: string): Promise<MarkdownOpenResult> {
+  async function getWindowsPowerShellExecutable(signal?: AbortSignal): Promise<string> {
+    const result = await pi.exec("cmd.exe", ["/d", "/c", "where", "pwsh.exe"], { timeout: 2000, signal });
+    return result.code === 0 ? "pwsh.exe" : "powershell.exe";
+  }
+
+  async function openWithGlow(absolutePath: string, signal?: AbortSignal): Promise<MarkdownOpenResult> {
     const cwd = path.dirname(absolutePath);
 
     if (process.platform === "win32") {
+      const shell = await getWindowsPowerShellExecutable(signal);
       await trySpawnDetached([
         {
           command: "wt.exe",
-          args: ["-d", cwd, "powershell.exe", "-NoExit", "-Command", `glow ${powershellSingleQuote(absolutePath)}`],
+          args: ["-d", cwd, shell, "-NoExit", "-Command", `glow ${powershellSingleQuote(absolutePath)}`],
         },
         {
           command: "cmd.exe",
-          args: ["/d", "/c", "start", "", "cmd.exe", "/k", "glow", absolutePath],
+          args: ["/d", "/c", "start", "", shell, "-NoExit", "-Command", `glow ${powershellSingleQuote(absolutePath)}`],
         },
       ], cwd);
       return { opener: "glow" };
@@ -292,7 +298,7 @@ export default function markdownOutputTools(pi: ExtensionAPI) {
 
   async function openMarkdownFile(absolutePath: string, ctx: ExtensionContext, signal?: AbortSignal): Promise<MarkdownOpenResult> {
     const settings = await loadMarkdownUtilitySettings(ctx);
-    return settings.openWith === "glow" ? openWithGlow(absolutePath) : openInVsCode(absolutePath, signal);
+    return settings.openWith === "glow" ? openWithGlow(absolutePath, signal) : openInVsCode(absolutePath, signal);
   }
 
   async function resolveRequestedMarkdownPath(cwd: string, requestedPath: string | undefined, useLast: boolean | undefined): Promise<string> {
