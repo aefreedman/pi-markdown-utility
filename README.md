@@ -1,18 +1,37 @@
 # Pi Markdown Utility
 
-Small Pi extension package for opening generated Markdown outputs in VS Code.
+Small Pi extension package for opening generated Markdown outputs in a user-configured Markdown opener.
 
 ## Features
 
 - Tracks the most recent successful `.md` file written or edited in the current Pi session.
-- `/open-last-md` opens the last tracked Markdown file in VS Code.
-- `/open-md <path>` opens a specific Markdown file in VS Code.
+- `/markdown-settings [code|glow]` configures the global Markdown opener.
+- `/open-last-md` opens the last tracked Markdown file with the configured opener.
+- `/open-md <path>` opens a specific Markdown file with the configured opener.
 - `open_markdown_output` lets the agent open a Markdown file when explicitly asked.
+
+## Configuration
+
+The opener defaults to VS Code. Run `/markdown-settings` to choose interactively, `/markdown-settings glow` to set it directly, or edit `markdownUtility.openWith` in `~/.pi/agent/settings.json` or trusted project `.pi/settings.json`:
+
+```json
+{
+  "markdownUtility": {
+    "openWith": "glow"
+  }
+}
+```
+
+Supported values:
+
+- `"code"` (default): opens the file with the VS Code `code` CLI.
+- `"glow"`: opens a new terminal window and runs `glow <file>` there.
 
 ## Requirements
 
 - Pi Coding Agent
-- VS Code `code` CLI available on `PATH`
+- For `openWith: "code"`: VS Code `code` CLI available on `PATH`
+- For `openWith: "glow"`: `glow` CLI available on `PATH` and a terminal launcher available (`wt.exe`/Windows Terminal on Windows, Terminal on macOS, or a common Linux terminal such as `x-terminal-emulator`, `gnome-terminal`, `konsole`, or `xterm`)
 
 ## Install
 
