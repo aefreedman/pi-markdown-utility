@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.4 - 2026-07-02
+
+- Fixed the Windows Terminal glow launcher by using PowerShell `-EncodedCommand`, avoiding Windows Terminal semicolon parsing errors.
+
 ## 0.2.3 - 2026-07-02
 
 - Changed the `glow` opener back to opening the requested Markdown file directly, while keeping the spawned terminal open after rendering.

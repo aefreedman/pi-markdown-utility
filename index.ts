@@ -171,6 +171,10 @@ function powershellSingleQuote(value: string): string {
   return `'${value.replace(/'/g, "''")}'`;
 }
 
+function powershellEncodedCommand(script: string): string {
+  return Buffer.from(script, "utf16le").toString("base64");
+}
+
 async function spawnDetached(command: string, args: string[], cwd?: string): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     const child = spawn(command, args, {
@@ -263,15 +267,15 @@ export default function markdownOutputTools(pi: ExtensionAPI) {
 
     if (process.platform === "win32") {
       const shell = await getWindowsPowerShellExecutable(signal);
-      const glowFileCommand = `glow ${powershellSingleQuote(absolutePath)}; Write-Host ''; Read-Host 'Press Enter to close'`;
+      const glowFileCommand = powershellEncodedCommand(`glow ${powershellSingleQuote(absolutePath)}`);
       await trySpawnDetached([
         {
           command: "wt.exe",
-          args: ["-d", cwd, shell, "-NoExit", "-Command", glowFileCommand],
+          args: ["-d", cwd, shell, "-NoExit", "-EncodedCommand", glowFileCommand],
         },
         {
           command: "cmd.exe",
-          args: ["/d", "/c", "start", "", shell, "-NoExit", "-Command", glowFileCommand],
+          args: ["/d", "/c", "start", "", shell, "-NoExit", "-EncodedCommand", glowFileCommand],
         },
       ], cwd);
       return { opener: "glow" };
