@@ -56,6 +56,7 @@ pi install -l <path-to-pi-markdown-utility>
 ## Notes
 
 - State is session-local; restarting Pi clears the last-output pointer.
+- Known issue: on Windows Terminal, `glow --tui <file>` may initially render before terminal sizing has settled, so word wrap can be wrong until Glow reloads the document. Press `r` in Glow to reload/reflow the view.
 - The package is intentionally operator-focused and lightweight.
 
 ## License

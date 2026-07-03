@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.7 - 2026-07-03
+
+- Reverted the Windows Glow startup delay because it did not resolve the initial word-wrap issue.
+- Documented the known Glow TUI word-wrap issue and manual reload workaround.
+
 ## 0.2.6 - 2026-07-02
 
 - Added a short startup delay before launching Glow in Windows Terminal to give the terminal dimensions time to settle before Glow's TUI renders.
