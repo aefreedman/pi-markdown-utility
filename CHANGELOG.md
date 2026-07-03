@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2 - 2026-07-02
+
+- Changed the `glow` opener to launch Glow's browser in the Markdown file's containing folder with hidden files enabled, instead of rendering the file directly and exiting.
+
 ## 0.2.1 - 2026-07-02
 
 - Changed the Windows Terminal glow launcher to prefer PowerShell 7 (`pwsh.exe`) and fall back to Windows PowerShell when unavailable.
