@@ -156,10 +156,7 @@ function parseMarkdownOpenWith(value: string): MarkdownOpenWith | undefined {
 
 function formatOpenResultForUser(cwd: string, absolutePath: string, result: MarkdownOpenResult): string {
   const displayPath = formatPathForUser(cwd, absolutePath);
-  if (result.opener === "glow") {
-    return `Opened ${formatPathForUser(cwd, path.dirname(absolutePath))} in glow; select ${path.basename(displayPath)}.`;
-  }
-  return `Opened ${displayPath} in VS Code.`;
+  return result.opener === "glow" ? `Opened ${displayPath} with glow in a new terminal.` : `Opened ${displayPath} in VS Code.`;
 }
 
 function posixShellQuote(value: string): string {
@@ -168,6 +165,10 @@ function posixShellQuote(value: string): string {
 
 function appleScriptString(value: string): string {
   return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+}
+
+function powershellSingleQuote(value: string): string {
+  return `'${value.replace(/'/g, "''")}'`;
 }
 
 async function spawnDetached(command: string, args: string[], cwd?: string): Promise<void> {
@@ -259,30 +260,30 @@ export default function markdownOutputTools(pi: ExtensionAPI) {
 
   async function openWithGlow(absolutePath: string, signal?: AbortSignal): Promise<MarkdownOpenResult> {
     const cwd = path.dirname(absolutePath);
-    const glowBrowseCommand = "glow --all .";
 
     if (process.platform === "win32") {
       const shell = await getWindowsPowerShellExecutable(signal);
+      const glowFileCommand = `glow ${powershellSingleQuote(absolutePath)}; Write-Host ''; Read-Host 'Press Enter to close'`;
       await trySpawnDetached([
         {
           command: "wt.exe",
-          args: ["-d", cwd, shell, "-NoExit", "-Command", glowBrowseCommand],
+          args: ["-d", cwd, shell, "-NoExit", "-Command", glowFileCommand],
         },
         {
           command: "cmd.exe",
-          args: ["/d", "/c", "start", "", shell, "-NoExit", "-Command", glowBrowseCommand],
+          args: ["/d", "/c", "start", "", shell, "-NoExit", "-Command", glowFileCommand],
         },
       ], cwd);
       return { opener: "glow" };
     }
 
     if (process.platform === "darwin") {
-      const script = `tell application "Terminal" to do script ${appleScriptString(`cd ${posixShellQuote(cwd)} && ${glowBrowseCommand}`)}`;
+      const script = `tell application "Terminal" to do script ${appleScriptString(`glow ${posixShellQuote(absolutePath)}; printf '\\nPress Enter to close...'; read _`)}`;
       await spawnDetached("osascript", ["-e", script], cwd);
       return { opener: "glow" };
     }
 
-    const shellScript = `${glowBrowseCommand}; printf '\\nPress Enter to close...'; read _`;
+    const shellScript = `glow ${posixShellQuote(absolutePath)}; printf '\\nPress Enter to close...'; read _`;
     const terminalFromEnv = process.env.PI_MARKDOWN_UTILITY_TERMINAL?.trim() || process.env.TERMINAL?.trim();
     const commands = [
       ...(terminalFromEnv ? [{ command: terminalFromEnv, args: ["-e", "sh", "-lc", shellScript] }] : []),

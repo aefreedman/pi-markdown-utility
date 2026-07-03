@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.3 - 2026-07-02
+
+- Changed the `glow` opener back to opening the requested Markdown file directly, while keeping the spawned terminal open after rendering.
+
 ## 0.2.2 - 2026-07-02
 
 - Changed the `glow` opener to launch Glow's browser in the Markdown file's containing folder with hidden files enabled, instead of rendering the file directly and exiting.

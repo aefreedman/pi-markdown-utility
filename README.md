@@ -25,7 +25,7 @@ The opener defaults to VS Code. Run `/markdown-settings` to choose interactively
 Supported values:
 
 - `"code"` (default): opens the file with the VS Code `code` CLI.
-- `"glow"`: opens a new terminal window in the file's containing folder and runs `glow --all .` so Glow stays open in browser mode with hidden files visible.
+- `"glow"`: opens a new terminal window, renders the requested file with `glow <file>`, and keeps the terminal open after rendering.
 
 ## Requirements
 
