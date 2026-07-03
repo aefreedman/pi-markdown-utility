@@ -267,7 +267,7 @@ export default function markdownOutputTools(pi: ExtensionAPI) {
 
     if (process.platform === "win32") {
       const shell = await getWindowsPowerShellExecutable(signal);
-      const glowFileCommand = powershellEncodedCommand(`glow ${powershellSingleQuote(absolutePath)}`);
+      const glowFileCommand = powershellEncodedCommand(`glow --tui ${powershellSingleQuote(absolutePath)}`);
       await trySpawnDetached([
         {
           command: "wt.exe",
@@ -282,12 +282,12 @@ export default function markdownOutputTools(pi: ExtensionAPI) {
     }
 
     if (process.platform === "darwin") {
-      const script = `tell application "Terminal" to do script ${appleScriptString(`glow ${posixShellQuote(absolutePath)}; printf '\\nPress Enter to close...'; read _`)}`;
+      const script = `tell application "Terminal" to do script ${appleScriptString(`glow --tui ${posixShellQuote(absolutePath)}; printf '\\nPress Enter to close...'; read _`)}`;
       await spawnDetached("osascript", ["-e", script], cwd);
       return { opener: "glow" };
     }
 
-    const shellScript = `glow ${posixShellQuote(absolutePath)}; printf '\\nPress Enter to close...'; read _`;
+    const shellScript = `glow --tui ${posixShellQuote(absolutePath)}; printf '\\nPress Enter to close...'; read _`;
     const terminalFromEnv = process.env.PI_MARKDOWN_UTILITY_TERMINAL?.trim() || process.env.TERMINAL?.trim();
     const commands = [
       ...(terminalFromEnv ? [{ command: terminalFromEnv, args: ["-e", "sh", "-lc", shellScript] }] : []),

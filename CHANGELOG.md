@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.5 - 2026-07-02
+
+- Changed the `glow` opener command to use `glow --tui <file>` in the spawned terminal.
+
 ## 0.2.4 - 2026-07-02
 
 - Fixed the Windows Terminal glow launcher by using PowerShell `-EncodedCommand`, avoiding Windows Terminal semicolon parsing errors.
