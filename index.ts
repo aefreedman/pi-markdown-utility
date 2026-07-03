@@ -267,7 +267,7 @@ export default function markdownOutputTools(pi: ExtensionAPI) {
 
     if (process.platform === "win32") {
       const shell = await getWindowsPowerShellExecutable(signal);
-      const glowFileCommand = powershellEncodedCommand(`glow --tui ${powershellSingleQuote(absolutePath)}`);
+      const glowFileCommand = powershellEncodedCommand(`Start-Sleep -Milliseconds 300; glow --tui ${powershellSingleQuote(absolutePath)}`);
       await trySpawnDetached([
         {
           command: "wt.exe",

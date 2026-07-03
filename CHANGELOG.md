@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.6 - 2026-07-02
+
+- Added a short startup delay before launching Glow in Windows Terminal to give the terminal dimensions time to settle before Glow's TUI renders.
+
 ## 0.2.5 - 2026-07-02
 
 - Changed the `glow` opener command to use `glow --tui <file>` in the spawned terminal.
