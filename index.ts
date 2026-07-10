@@ -4,6 +4,11 @@ import { homedir } from "node:os";
 import * as path from "node:path";
 import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-agent";
 import { Type } from "typebox";
+import {
+  getMarkdownExecutableCandidates,
+  missingMarkdownExecutableError,
+  type MarkdownExecutableKind,
+} from "./executables";
 
 type MarkdownOutputRecord = {
   absolutePath: string;
@@ -239,19 +244,43 @@ export default function markdownOutputTools(pi: ExtensionAPI) {
   }
 
   async function execOpenCommand(command: string, args: string[], signal: AbortSignal | undefined, timeout: number) {
-    if (process.platform === "win32") {
-      return pi.exec("cmd.exe", ["/d", "/c", command, ...args], { timeout, signal });
-    }
-
+    // Keep filenames and executable overrides as literal argv values on every
+    // platform. In particular, never route Markdown paths through cmd.exe.
     return pi.exec(command, args, { timeout, signal });
   }
 
+  async function findMarkdownExecutable(
+    kind: MarkdownExecutableKind,
+    signal?: AbortSignal,
+  ): Promise<string> {
+    for (const executable of getMarkdownExecutableCandidates(kind)) {
+      try {
+        const result = await execOpenCommand(executable, ["--version"], signal, 5000);
+        if (result.code === 0) {
+          return executable;
+        }
+        const stderr = result.stderr?.trim();
+        if (/\bENOENT\b|not found|cannot find/i.test(stderr ?? "")) {
+          continue;
+        }
+        throw new Error(stderr ? `${executable} failed: ${stderr}` : `${executable} failed with exit code ${result.code}`);
+      } catch (error) {
+        if (isNodeErrorWithCode(error, "ENOENT")) {
+          continue;
+        }
+        throw error;
+      }
+    }
+
+    throw missingMarkdownExecutableError(kind);
+  }
+
   async function openInVsCode(absolutePath: string, signal?: AbortSignal): Promise<MarkdownOpenResult> {
-    const result = await execOpenCommand("code", ["-g", absolutePath], signal, 5000);
+    const executable = await findMarkdownExecutable("code", signal);
+    const result = await execOpenCommand(executable, ["-g", absolutePath], signal, 5000);
     if (result.code !== 0) {
       const stderr = result.stderr?.trim();
-      const commandLabel = process.platform === "win32" ? "cmd.exe/code" : "code";
-      throw new Error(stderr ? `${commandLabel} failed: ${stderr}` : `${commandLabel} failed with exit code ${result.code}`);
+      throw new Error(stderr ? `${executable} failed: ${stderr}` : `${executable} failed with exit code ${result.code}`);
     }
 
     return { opener: "code" };
@@ -264,10 +293,11 @@ export default function markdownOutputTools(pi: ExtensionAPI) {
 
   async function openWithGlow(absolutePath: string, signal?: AbortSignal): Promise<MarkdownOpenResult> {
     const cwd = path.dirname(absolutePath);
+    const executable = await findMarkdownExecutable("glow", signal);
 
     if (process.platform === "win32") {
       const shell = await getWindowsPowerShellExecutable(signal);
-      const glowFileCommand = powershellEncodedCommand(`glow --tui ${powershellSingleQuote(absolutePath)}`);
+      const glowFileCommand = powershellEncodedCommand(`& ${powershellSingleQuote(executable)} --tui ${powershellSingleQuote(absolutePath)}`);
       await trySpawnDetached([
         {
           command: "wt.exe",
@@ -282,12 +312,12 @@ export default function markdownOutputTools(pi: ExtensionAPI) {
     }
 
     if (process.platform === "darwin") {
-      const script = `tell application "Terminal" to do script ${appleScriptString(`glow --tui ${posixShellQuote(absolutePath)}; printf '\\nPress Enter to close...'; read _`)}`;
+      const script = `tell application "Terminal" to do script ${appleScriptString(`${posixShellQuote(executable)} --tui ${posixShellQuote(absolutePath)}; printf '\\nPress Enter to close...'; read _`)}`;
       await spawnDetached("osascript", ["-e", script], cwd);
       return { opener: "glow" };
     }
 
-    const shellScript = `glow --tui ${posixShellQuote(absolutePath)}; printf '\\nPress Enter to close...'; read _`;
+    const shellScript = `${posixShellQuote(executable)} --tui ${posixShellQuote(absolutePath)}; printf '\\nPress Enter to close...'; read _`;
     const terminalFromEnv = process.env.PI_MARKDOWN_UTILITY_TERMINAL?.trim() || process.env.TERMINAL?.trim();
     const commands = [
       ...(terminalFromEnv ? [{ command: terminalFromEnv, args: ["-e", "sh", "-lc", shellScript] }] : []),

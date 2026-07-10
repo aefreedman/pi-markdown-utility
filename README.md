@@ -27,11 +27,17 @@ Supported values:
 - `"code"` (default): opens the file with the VS Code `code` CLI.
 - `"glow"`: opens a new terminal window, runs `glow --tui <file>`, and keeps the terminal open after Glow exits.
 
+### Executable overrides and macOS discovery
+
+Set `PI_MARKDOWN_UTILITY_CODE_EXECUTABLE` or `PI_MARKDOWN_UTILITY_GLOW_EXECUTABLE` to an executable path when the corresponding command is not available on `PATH`. An override is used instead of automatic discovery. On Windows, point the VS Code override at `Code.exe`, not a `.cmd` wrapper; Markdown filenames are always passed as literal process arguments and never through `cmd.exe` parsing.
+
+On macOS, without an override, the package tries the bare `code` or `glow` command first. For VS Code it then tries the standard application CLI at `/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code` and Homebrew locations `/opt/homebrew/bin/code` and `/usr/local/bin/code`. For Glow it also tries the standard Homebrew locations `/opt/homebrew/bin/glow` and `/usr/local/bin/glow`. Missing executables report the applicable PATH/override remedy before an opener or terminal is launched.
+
 ## Requirements
 
 - Pi Coding Agent
-- For `openWith: "code"`: VS Code `code` CLI available on `PATH`
-- For `openWith: "glow"`: `glow` CLI available on `PATH` and a terminal launcher available (`wt.exe`/Windows Terminal on Windows, Terminal on macOS, or a common Linux terminal such as `x-terminal-emulator`, `gnome-terminal`, `konsole`, or `xterm`). On Windows, the launcher prefers PowerShell 7 (`pwsh.exe`) and falls back to Windows PowerShell.
+- For `openWith: "code"`: VS Code `code` CLI available on `PATH`, discoverable at a standard macOS location, or set through `PI_MARKDOWN_UTILITY_CODE_EXECUTABLE`.
+- For `openWith: "glow"`: `glow` CLI available on `PATH`, discoverable at a standard macOS Homebrew location, or set through `PI_MARKDOWN_UTILITY_GLOW_EXECUTABLE`; and a terminal launcher available (`wt.exe`/Windows Terminal on Windows, Terminal on macOS, or a common Linux terminal such as `x-terminal-emulator`, `gnome-terminal`, `konsole`, or `xterm`). On Windows, the launcher prefers PowerShell 7 (`pwsh.exe`) and falls back to Windows PowerShell.
 
 ## Install
 
@@ -51,6 +57,12 @@ Project-local install:
 
 ```bash
 pi install -l <path-to-pi-markdown-utility>
+```
+
+## Testing
+
+```bash
+npm test
 ```
 
 ## Notes
