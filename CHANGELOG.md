@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2 - 2026-07-10
+
+- Migrated Pi extension imports and peer dependencies to the `@earendil-works` package scope.
+
 ## 0.2.1 - 2026-07-09
 
 - Added `PI_MARKDOWN_UTILITY_CODE_EXECUTABLE` and `PI_MARKDOWN_UTILITY_GLOW_EXECUTABLE` overrides for Markdown opener executables.

@@ -1,7 +1,7 @@
 {
   "name": "@aefree/pi-markdown-utility",
   "private": true,
-  "version": "0.2.1",
+  "version": "0.2.2",
   "type": "module",
   "keywords": [
     "pi-package"
@@ -15,7 +15,7 @@
     "test": "npx --yes tsx tests/executables-validation.ts"
   },
   "peerDependencies": {
-    "@mariozechner/pi-coding-agent": "*",
+    "@earendil-works/pi-coding-agent": "*",
     "typebox": "*"
   },
   "description": "Pi utility tools for opening generated Markdown output.",
