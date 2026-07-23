@@ -1,7 +1,7 @@
 {
   "name": "@aefree/pi-markdown-utility",
   "private": true,
-  "version": "0.2.2",
+  "version": "0.3.0",
   "type": "module",
   "keywords": [
     "pi-package"
@@ -12,13 +12,14 @@
     ]
   },
   "scripts": {
-    "test": "npx --yes tsx tests/executables-validation.ts"
+    "test": "npx --yes tsx tests/executables-validation.ts && npx --yes tsx tests/unwrap-markdown-validation.ts",
+    "unwrap": "npx --yes tsx unwrap-markdown-cli.ts"
   },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*",
     "typebox": "*"
   },
-  "description": "Pi utility tools for opening generated Markdown output.",
+  "description": "Pi utility tools for opening and structurally formatting Markdown files.",
   "license": "MIT",
   "repository": {
     "type": "git",
