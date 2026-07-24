@@ -1,5 +1,19 @@
 # Changelog
 
+
+## 0.3.1 - 2026-07-24
+
+### Changed
+
+- Marked Pi-bundled core dependencies as optional peers so Pi git installs do not create redundant per-package `node_modules` directories.
+
+## 0.3.0 - 2026-07-22
+
+- Added the `unwrap_markdown` agent tool with preview, check, and write modes scoped to the active workspace.
+- Added a reusable CLI for removing column-width wrapping from Markdown prose.
+- Preserve Markdown structure, explicit hard breaks, UTF-8 BOMs, and LF or CRLF line endings while formatting.
+- Added transformation, idempotence, filesystem, and workspace-boundary validation.
+
 ## 0.2.2 - 2026-07-10
 
 - Migrated Pi extension imports and peer dependencies to the `@earendil-works` package scope.

@@ -9,6 +9,7 @@ import {
   missingMarkdownExecutableError,
   type MarkdownExecutableKind,
 } from "./executables";
+import { unwrapMarkdownPaths, type MarkdownUnwrapMode } from "./unwrap-markdown";
 
 type MarkdownOutputRecord = {
   absolutePath: string;
@@ -41,6 +42,15 @@ const DEFAULT_MARKDOWN_UTILITY_SETTINGS: MarkdownUtilitySettings = { openWith: "
 const OPEN_MARKDOWN_OUTPUT_PARAMS = Type.Object({
   path: Type.Optional(Type.String({ description: "Workspace-relative or absolute markdown file path" })),
   use_last: Type.Optional(Type.Boolean({ description: "Open the last tracked markdown output when path is omitted", default: true })),
+});
+
+const UNWRAP_MARKDOWN_PARAMS = Type.Object({
+  paths: Type.Array(Type.String({ description: "Workspace-relative Markdown file or directory" }), { minItems: 1 }),
+  mode: Type.Optional(Type.Union([
+    Type.Literal("preview"),
+    Type.Literal("check"),
+    Type.Literal("write"),
+  ], { default: "preview" })),
 });
 
 function normalizeUserPath(rawPath: string): string {
@@ -478,6 +488,37 @@ export default function markdownOutputTools(pi: ExtensionAPI) {
         const message = error instanceof Error ? error.message : String(error);
         ctx.ui.notify(message, "error");
       }
+    },
+  });
+
+  pi.registerTool({
+    name: "unwrap_markdown",
+    label: "Unwrap Markdown",
+    description: "Remove column-width line wrapping from Markdown prose while preserving Markdown structure.",
+    promptSnippet: "Preview, check, or remove baked-in line wrapping from Markdown files inside the current workspace.",
+    promptGuidelines: [
+      "Use preview or check mode unless the user explicitly asks to modify Markdown files.",
+      "Use write mode only when the user explicitly requests unwrapping or formatting.",
+      "Treat headings, lists, tables, code blocks, frontmatter, hard breaks, and paragraph boundaries as intentional structure.",
+    ],
+    parameters: UNWRAP_MARKDOWN_PARAMS,
+    async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+      const mode = (params.mode ?? "preview") as MarkdownUnwrapMode;
+      const result = await unwrapMarkdownPaths(ctx.cwd, params.paths, mode);
+      const count = result.changedFiles.length;
+      let summary: string;
+      if (count === 0) {
+        summary = `All ${result.scannedFiles.length} Markdown files are unwrapped.`;
+      } else if (mode === "write") {
+        summary = `Unwrapped ${count} of ${result.scannedFiles.length} Markdown files.`;
+      } else {
+        summary = `${count} of ${result.scannedFiles.length} Markdown files need unwrapping.`;
+      }
+      const changed = count > 0 ? `\n${result.changedFiles.join("\n")}` : "";
+      return {
+        content: [{ type: "text", text: `${summary}${changed}` }],
+        details: { mode, ...result },
+      };
     },
   });
 
