@@ -1,5 +1,12 @@
 # Changelog
 
+
+## 0.3.1 - 2026-07-24
+
+### Changed
+
+- Marked Pi-bundled core dependencies as optional peers so Pi git installs do not create redundant per-package `node_modules` directories.
+
 ## 0.3.0 - 2026-07-22
 
 - Added the `unwrap_markdown` agent tool with preview, check, and write modes scoped to the active workspace.
