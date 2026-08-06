@@ -5,7 +5,8 @@
 ### Changed
 
 - Prepared the package for its initial public npm distribution with public access metadata, npm installation guidance, a runtime TypeBox dependency, and a runtime-only tarball allowlist.
-- Added an OIDC npm publishing workflow for releases after the initial manual npm publication.
+- Added a manually dispatched, tag-verified OIDC npm publishing workflow for releases after the initial manual npm publication.
+- Pinned repository test tooling for reproducible validation.
 
 ## 0.3.1 - 2026-07-24
 
