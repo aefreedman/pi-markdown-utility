@@ -63,10 +63,16 @@ The CLI uses `--root` as its workspace boundary, defaulting to its current worki
 
 ## Install
 
+From npm:
+
+```bash
+pi install @aefree/pi-markdown-utility
+```
+
 From GitHub:
 
 ```bash
-pi install git:git@github.com:aefreedman/pi-markdown-utility.git
+pi install git:https://github.com/aefreedman/pi-markdown-utility.git
 ```
 
 Local development install:

@@ -1,11 +1,19 @@
 {
   "name": "@aefree/pi-markdown-utility",
-  "private": true,
-  "version": "0.3.1",
+  "version": "0.3.2",
   "type": "module",
   "keywords": [
     "pi-package"
   ],
+  "files": [
+    "index.ts",
+    "executables.ts",
+    "unwrap-markdown.ts",
+    "unwrap-markdown-cli.ts"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "pi": {
     "extensions": [
       "./index.ts"
@@ -15,15 +23,17 @@
     "test": "npx --yes tsx tests/executables-validation.ts && npx --yes tsx tests/unwrap-markdown-validation.ts",
     "unwrap": "npx --yes tsx unwrap-markdown-cli.ts"
   },
+  "dependencies": {
+    "typebox": "^1.3.10"
+  },
   "peerDependencies": {
-    "@earendil-works/pi-coding-agent": "*",
-    "typebox": "*"
+    "@earendil-works/pi-coding-agent": "*"
   },
   "description": "Pi utility tools for opening and structurally formatting Markdown files.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/aefreedman/pi-markdown-utility.git"
+    "url": "git+https://github.com/aefreedman/pi-markdown-utility.git"
   },
   "bugs": {
     "url": "https://github.com/aefreedman/pi-markdown-utility/issues"
@@ -31,9 +41,6 @@
   "homepage": "https://github.com/aefreedman/pi-markdown-utility#readme",
   "peerDependenciesMeta": {
     "@earendil-works/pi-coding-agent": {
-      "optional": true
-    },
-    "typebox": {
       "optional": true
     }
   }

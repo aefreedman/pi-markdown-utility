@@ -1,0 +1,24 @@
+name: Publish npm package
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.14.0"
+      - run: npm install --global npm@11.5.1
+      - run: npm --version
+      - name: Verify tag matches package version
+        run: test "$GITHUB_REF_NAME" = "v$(node -p \"require('./package.json').version\")"
+      - run: npm publish --access public

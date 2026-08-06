@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.2 - 2026-08-06
+
+### Changed
+
+- Prepared the package for its initial public npm distribution with public access metadata, npm installation guidance, a runtime TypeBox dependency, and a runtime-only tarball allowlist.
+- Added an OIDC npm publishing workflow for releases after the initial manual npm publication.
 
 ## 0.3.1 - 2026-07-24
 
