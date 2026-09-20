@@ -44,5 +44,8 @@
     "@earendil-works/pi-coding-agent": {
       "optional": true
     }
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "0.86.1"
   }
 }
