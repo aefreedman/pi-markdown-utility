@@ -22,6 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           ref: ${{ inputs.tag }}
       - uses: actions/setup-node@v4
         with:
@@ -39,8 +40,21 @@ jobs:
           test "$RELEASE_TAG" = "$expected_tag"
           test "$(git rev-parse HEAD)" = "$EXPECTED_COMMIT"
           test "$(git rev-parse "$RELEASE_TAG^{}")" = "$EXPECTED_COMMIT"
-          if npm view "$package_name@$package_version" version gitHead --json; then
+          set +e
+          npm_metadata=$(npm view "$package_name@$package_version" version gitHead --json 2>&1)
+          npm_status=$?
+          set -e
+          if [ "$npm_status" -eq 0 ]; then
+            if ! node -e 'const value = JSON.parse(process.argv[1]); process.exit(typeof value.version === "string" ? 0 : 1)' "$npm_metadata"; then
+              echo "npm returned malformed metadata for an existing version" >&2
+              exit 1
+            fi
             echo "Refusing to publish an existing npm version" >&2
+            exit 1
+          fi
+          if [ "$npm_status" -ne 1 ] || ! printf '%s' "$npm_metadata" | grep -Fq "No match found for version $package_version"; then
+            printf '%s\n' "$npm_metadata" >&2
+            echo "Unable to verify that the npm version is absent" >&2
             exit 1
           fi
       - run: npm publish --access public
