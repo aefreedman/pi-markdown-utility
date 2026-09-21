@@ -1,6 +1,6 @@
 {
   "name": "@aefree/pi-markdown-utility",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "type": "module",
   "keywords": [
     "pi-package"
@@ -46,6 +46,6 @@
     }
   },
   "devDependencies": {
-    "@earendil-works/pi-coding-agent": "0.86.1"
+    "@earendil-works/pi-coding-agent": "0.87.0"
   }
 }
