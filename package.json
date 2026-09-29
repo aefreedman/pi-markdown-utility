@@ -2,6 +2,9 @@
   "name": "@aefree/pi-markdown-utility",
   "version": "0.3.4",
   "type": "module",
+  "engines": {
+    "node": ">=22.19.0"
+  },
   "keywords": [
     "pi-package"
   ],
@@ -20,11 +23,8 @@
     ]
   },
   "scripts": {
-    "test": "tsx tests/executables-validation.ts && tsx tests/unwrap-markdown-validation.ts",
-    "unwrap": "tsx unwrap-markdown-cli.ts"
-  },
-  "dependencies": {
-    "tsx": "4.23.9"
+    "test": "node tests/executables-validation.ts && node tests/unwrap-markdown-validation.ts",
+    "unwrap": "node unwrap-markdown-cli.ts"
   },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*",

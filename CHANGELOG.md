@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- run Markdown CLI and offline tests with native Node instead of shipping tsx; require Node >=22.19.0 for the Pi runtime.
+
 - Align development and deterministic validation with Pi 0.99.1. Use the host-provided TypeBox peer instead of a production copy.
 
 ## 0.3.4 - 2026-09-21
