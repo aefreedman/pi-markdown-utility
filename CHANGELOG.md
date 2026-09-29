@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Align development and deterministic validation with Pi 0.99.1. Use the host-provided TypeBox peer instead of a production copy.
+
 ## 0.3.4 - 2026-09-21
 
 ### Changed
