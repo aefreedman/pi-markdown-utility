@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 
-const workflow = readFileSync(new URL("../.github/workflows/release.yml", import.meta.url), "utf8");
+const workflow = readFileSync(new URL("../.github/workflows/release.yml", import.meta.url), "utf8").replaceAll("\r\n", "\n");
 const manifest = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
 const bash = process.platform === "win32" ? path.join(process.env.ProgramFiles, "Git", "bin", "bash.exe") : "bash";
 function block(name) {
@@ -43,16 +43,15 @@ function run(script, env = {}) {
     assert.equal(result.status === 0, pass, `${name}: ${result.stderr}`);
     if (pass) assert.match(result.stdout, new RegExp(`EXPECTED_COMMIT=${sha}`));
   }
-  const registry = block("Reconcile registry identity, publish only if absent, and verify");
+  const registry = block("Reconcile registry identity and publish only if absent");
   const npmMock = `npm() {
     if [[ "$1" != view ]]; then
       if [[ "$MOCK_REGISTRY" == absent ]]; then published=1; return 0; fi
+      if [[ "$MOCK_REGISTRY" == publishfail ]]; then return 1; fi
       echo 'unexpected publication' >&2; return 99
     fi
     case "$MOCK_REGISTRY" in
-      absent)
-        if [[ "\${published:-0}" == 1 ]]; then printf '{"version":"${manifest.version}","gitHead":"${sha}"}';
-        else printf '{"error":{"code":"E404","summary":"No match found for version ${manifest.version}"}}'; return 1; fi;;
+      absent|publishfail) printf '{"error":{"code":"E404","summary":"No match found for version ${manifest.version}"}}'; return 1;;
       same) printf '{"version":"${manifest.version}","gitHead":"${sha}"}';;
       mismatch) printf '{"version":"${manifest.version}","gitHead":"${other}"}';;
       version) printf '{"version":"0.0.0","gitHead":"${sha}"}';;
@@ -61,10 +60,10 @@ function run(script, env = {}) {
       unauthorized) printf '{"error":{"code":"E401"}}'; return 1;;
     esac
   };\n`;
-  for (const scenario of ["same", "absent", "mismatch", "version", "malformed", "network", "unauthorized"]) {
+  for (const scenario of ["same", "absent", "publishfail", "mismatch", "version", "malformed", "network", "unauthorized"]) {
     const result = run(npmMock + registry, { MOCK_REGISTRY: scenario });
     assert.equal(result.status === 0, scenario === "same" || scenario === "absent", `${scenario}: ${result.stderr}`);
     assert.doesNotMatch(result.stderr, /unexpected publication/);
   }
-  console.log("Release workflow validation passed: 8 event/tag/commit and 7 registry identity cases.");
+  console.log("Release workflow validation passed: 8 event/tag/commit and 8 registry/publish identity cases.");
 }

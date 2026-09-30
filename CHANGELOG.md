@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- Stop gating trusted-publication success on immediate npm visibility; keep pre-publish identity reconciliation and fail closed on a failed publish response.
+
 ## 0.4.0 - 2026-09-29
 
 ### Changed

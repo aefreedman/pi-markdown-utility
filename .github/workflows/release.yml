@@ -73,7 +73,7 @@ jobs:
           npm test
           npm pack --dry-run --json
           test -z "$(git status --porcelain)"
-      - name: Reconcile registry identity, publish only if absent, and verify
+      - name: Reconcile registry identity and publish only if absent
         run: |
           set -euo pipefail
           package_name=$(node -p 'require("./package.json").name')
@@ -112,22 +112,10 @@ jobs:
           case "$status" in
             0) echo "Matching version already published; verifying without republishing" ;;
             2)
-              # A failed response can still mean the registry accepted publication.
-              # Reconcile before permitting a retry; never replace an existing identity.
-              if ! npm publish --access public; then
-                echo "Publish returned failure; checking for matching partial success" >&2
-              fi
+              # A failed response may follow acceptance by npm. Stop on failure;
+              # inspect registry identity separately before any manual retry.
+              # A successful publish is not gated on registry propagation.
+              npm publish --access public
               ;;
             *) exit 1 ;;
           esac
-          for attempt in 1 2 3 4 5; do
-            status=0
-            registry_identity || status=$?
-            case "$status" in
-              0) echo "Verified npm version and gitHead"; exit 0 ;;
-              2) sleep 5 ;;
-              *) exit 1 ;;
-            esac
-          done
-          echo "Publication not confirmed; preserve tag/commit and reconcile before retry" >&2
-          exit 1
