@@ -23,7 +23,7 @@
     ]
   },
   "scripts": {
-    "test": "node tests/executables-validation.ts && node tests/unwrap-markdown-validation.ts",
+    "test": "node tests/executables-validation.ts && node tests/unwrap-markdown-validation.ts && node tests/release-workflow-validation.mjs",
     "unwrap": "tsx unwrap-markdown-cli.ts"
   },
   "peerDependencies": {

@@ -10,6 +10,7 @@
 - Align development and deterministic validation with Pi 0.99.1. Use the host-provided TypeBox peer instead of a production copy.
 - Document the Pi/TypeBox extension host contract and the standalone CLI's Node/tsx requirements.
 - Validate immutable release tags with a locked install, offline tests, and pack inspection on Node 22.19.0; reconcile matching npm retries and verify published version/commit identity.
+- Automatically publish stable GitHub releases through the existing trusted publisher, retaining exact tag/commit manual recovery and fail-closed npm identity checks.
 
 ## 0.3.4 - 2026-09-21
 
