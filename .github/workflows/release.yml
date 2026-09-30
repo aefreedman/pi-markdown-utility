@@ -16,9 +16,14 @@ permissions:
   contents: read
   id-token: write
 
+concurrency:
+  group: npm-release
+  cancel-in-progress: false
+
 jobs:
   publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -26,7 +31,7 @@ jobs:
           ref: ${{ inputs.tag }}
       - uses: actions/setup-node@v4
         with:
-          node-version: "22.14.0"
+          node-version: "22.19.0"
       - run: npm install --global npm@11.5.1
       - run: npm --version
       - name: Verify requested immutable tag and package identity
@@ -34,27 +39,82 @@ jobs:
           RELEASE_TAG: ${{ inputs.tag }}
           EXPECTED_COMMIT: ${{ inputs.commit }}
         run: |
-          package_name=$(node -p 'require("./package.json").name')
+          set -euo pipefail
           package_version=$(node -p 'require("./package.json").version')
-          expected_tag="v$package_version"
-          test "$RELEASE_TAG" = "$expected_tag"
+          test "$RELEASE_TAG" = "v$package_version"
+          [[ "$EXPECTED_COMMIT" =~ ^[0-9a-f]{40}$ ]]
           test "$(git rev-parse HEAD)" = "$EXPECTED_COMMIT"
           test "$(git rev-parse "$RELEASE_TAG^{}")" = "$EXPECTED_COMMIT"
-          set +e
-          npm_metadata=$(npm view "$package_name@$package_version" version gitHead --json 2>&1)
-          npm_status=$?
-          set -e
-          if [ "$npm_status" -eq 0 ]; then
-            if ! node -e 'const value = JSON.parse(process.argv[1]); process.exit(typeof value.version === "string" ? 0 : 1)' "$npm_metadata"; then
-              echo "npm returned malformed metadata for an existing version" >&2
-              exit 1
+          node --input-type=module -e '
+            import fs from "node:fs";
+            const version = JSON.parse(fs.readFileSync("package.json", "utf8")).version;
+            if (!fs.readFileSync("CHANGELOG.md", "utf8").split(/\r?\n/).some(line => line.startsWith(`## ${version} - `))) {
+              throw new Error("Missing finalized changelog entry");
+            }
+          '
+      - name: Locked install and offline validation
+        run: |
+          npm ci --no-audit --no-fund
+          npm test
+          npm pack --dry-run --json
+          test -z "$(git status --porcelain)"
+      - name: Reconcile registry identity, publish only if absent, and verify
+        env:
+          EXPECTED_COMMIT: ${{ inputs.commit }}
+        run: |
+          set -euo pipefail
+          package_name=$(node -p 'require("./package.json").name')
+          package_version=$(node -p 'require("./package.json").version')
+          metadata_file=$(mktemp)
+          error_file=$(mktemp)
+          trap 'rm -f "$metadata_file" "$error_file"' EXIT
+          # Return 0 for the same immutable identity, 2 for proven absence.
+          # Network failures, malformed metadata, and mismatches fail closed.
+          registry_identity() {
+            local status=0
+            npm view "$package_name@$package_version" version gitHead --json --fetch-retries=0 --fetch-timeout=15000 >"$metadata_file" 2>"$error_file" || status=$?
+            if [ "$status" -eq 0 ]; then
+              node -e '
+                const fs = require("node:fs");
+                const value = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+                if (value.version !== process.argv[2] || value.gitHead !== process.argv[3]) {
+                  console.error("Existing npm version has a different or missing immutable identity");
+                  process.exit(1);
+                }
+              ' "$metadata_file" "$package_version" "$EXPECTED_COMMIT" || return 1
+              return 0
             fi
-            echo "Refusing to publish an existing npm version" >&2
-            exit 1
-          fi
-          if [ "$npm_status" -ne 1 ] || ! printf '%s' "$npm_metadata" | grep -Fq "No match found for version $package_version"; then
-            printf '%s\n' "$npm_metadata" >&2
-            echo "Unable to verify that the npm version is absent" >&2
-            exit 1
-          fi
-      - run: npm publish --access public
+            if [ "$status" -eq 1 ] && node -e '
+              const fs = require("node:fs");
+              const value = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+              process.exit(value.error?.code === "E404" && value.error?.summary === `No match found for version ${process.argv[2]}` ? 0 : 1);
+            ' "$metadata_file" "$package_version"; then
+              return 2
+            fi
+            echo "Unable to verify npm release identity" >&2
+            return 1
+          }
+          status=0
+          registry_identity || status=$?
+          case "$status" in
+            0) echo "Matching version already published; verifying without republishing" ;;
+            2)
+              # A failed response can still mean the registry accepted publication.
+              # Reconcile before permitting a retry; never replace an existing identity.
+              if ! npm publish --access public; then
+                echo "Publish returned failure; checking for matching partial success" >&2
+              fi
+              ;;
+            *) exit 1 ;;
+          esac
+          for attempt in 1 2 3 4 5; do
+            status=0
+            registry_identity || status=$?
+            case "$status" in
+              0) echo "Verified npm version and gitHead"; exit 0 ;;
+              2) sleep 5 ;;
+              *) exit 1 ;;
+            esac
+          done
+          echo "Publication not confirmed; preserve tag/commit and reconcile before retry" >&2
+          exit 1

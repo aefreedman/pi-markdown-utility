@@ -2,9 +2,14 @@
 
 ## Unreleased
 
-- run Markdown CLI and offline tests with native Node instead of shipping tsx; require Node >=22.19.0 for the Pi runtime.
+## 0.4.0 - 2026-09-29
 
+### Changed
+
+- Run offline tests with native Node and require Node >=22.19.0. Retain the pinned tsx CLI runtime so npm-installed TypeScript executes inside node_modules.
 - Align development and deterministic validation with Pi 0.99.1. Use the host-provided TypeBox peer instead of a production copy.
+- Document the Pi/TypeBox extension host contract and the standalone CLI's Node/tsx requirements.
+- Validate immutable release tags with a locked install, offline tests, and pack inspection on Node 22.19.0; reconcile matching npm retries and verify published version/commit identity.
 
 ## 0.3.4 - 2026-09-21
 
