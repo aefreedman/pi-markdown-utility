@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.4.1 - 2026-10-13
+
+- Refresh exact Pi development dependencies and reproducible lockfiles to 1.2.0; keep runtime peers unchanged.
+
 ### Fixed
 
 - Stop gating trusted-publication success on immediate npm visibility; keep pre-publish identity reconciliation and fail closed on a failed publish response.
