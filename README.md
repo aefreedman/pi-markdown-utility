@@ -33,7 +33,7 @@ Supported values:
 
 Set `PI_MARKDOWN_UTILITY_CODE_EXECUTABLE` or `PI_MARKDOWN_UTILITY_GLOW_EXECUTABLE` to an executable path when the corresponding command is not available on `PATH`. An override is used instead of automatic discovery. On Windows, point the VS Code override at `Code.exe`, not a `.cmd` wrapper; Markdown filenames are always passed as literal process arguments and never through `cmd.exe` parsing.
 
-On macOS, without an override, the package tries the bare `code` or `glow` command first. For VS Code it then tries the standard application CLI at `/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code` and Homebrew locations `/opt/homebrew/bin/code` and `/usr/local/bin/code`. For Glow it also tries the standard Homebrew locations `/opt/homebrew/bin/glow` and `/usr/local/bin/glow`. Missing executables report the applicable PATH/override remedy before an opener or terminal is launched.
+On macOS, without an override, the package tries the bare `code` or `glow` command first. For VS Code it then tries the standard application CLI at `/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code` and Homebrew locations `/opt/homebrew/bin/code` and `/usr/local/bin/code`. For Glow it also tries the standard Homebrew locations `/opt/homebrew/bin/glow` and `/usr/local/bin/glow`. Missing executables report the applicable PATH/override remedy before an opener or terminal is launched. Version probes and captured opener commands limit combined stdout/stderr to 16 KiB. Truncated or terminated commands fail explicitly instead of reporting success, with captured stderr preserved in the diagnostic.
 
 ## Markdown unwrapping
 
@@ -61,7 +61,7 @@ The standalone CLI and formatter do not require Pi or TypeBox. The CLI script us
 
 - Node.js >=22.19.0 for the Pi extension, standalone CLI, and native TypeScript offline tests.
 - The latest stable Pi Coding Agent; validated with the exact Pi development dependency in `package.json`. Older Pi releases are not a supported baseline.
-- The Pi extension requires the host's `typebox` runtime package (validated with 1.3.10). Pi and TypeBox are optional npm peers to avoid installing duplicate host packages, not optional when loading the extension.
+- The Pi extension requires the host's `typebox` runtime package. Pi and TypeBox are optional npm peers to avoid installing duplicate host packages, not optional when loading the extension.
 - For `openWith: "code"`: VS Code `code` CLI available on `PATH`, discoverable at a standard macOS location, or set through `PI_MARKDOWN_UTILITY_CODE_EXECUTABLE`.
 - For `openWith: "glow"`: `glow` CLI available on `PATH`, discoverable at a standard macOS Homebrew location, or set through `PI_MARKDOWN_UTILITY_GLOW_EXECUTABLE`; and a terminal launcher available (`wt.exe`/Windows Terminal on Windows, Terminal on macOS, or a common Linux terminal such as `x-terminal-emulator`, `gnome-terminal`, `konsole`, or `xterm`). On Windows, the launcher prefers PowerShell 7 (`pwsh.exe`) and falls back to Windows PowerShell.
 
@@ -97,7 +97,7 @@ pi install -l <path-to-pi-markdown-utility>
 npm test
 ```
 
-The test suite covers executable discovery, prose transformation, Markdown structure preservation, line-ending retention, idempotence, recursive path handling, write behavior, and workspace-boundary enforcement.
+The test suite covers executable discovery, bounded opener/probe behavior with injected exec stubs, prose transformation, Markdown structure preservation, line-ending retention, idempotence, recursive path handling, write behavior, and workspace-boundary enforcement. It also loads the extension in the manifest-pinned Pi host and tests valid, invalid, and coerced tool arguments through an isolated session with synthetic Markdown and a local model stub. No test launches an editor or terminal, calls a provider, or changes user settings.
 
 ## Notes
 

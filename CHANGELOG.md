@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+### Changed
+
+- Refresh the exact Pi validation dependency and lockfile to 1.5.0; retain optional wildcard host peers.
+- Include the root changelog in npm packages for Pi's default extension-update discovery.
+
+### Fixed
+
+- Bound opener and version/PowerShell probe output to 16 KiB; reject truncated or terminated results with useful stderr rather than treating them as successful or missing executables.
+- Fall back to Windows PowerShell when the discovery executable itself is missing.
+
+### Tests
+
+- Validate actual Pi host loading, tool-argument coercion and rejection before mutation dispatch, workspace guards, and opener/probe failure paths using only synthetic fixtures and exec/model stubs.
+
 ## 0.4.1 - 2026-10-13
 
 - Refresh exact Pi development dependencies and reproducible lockfiles to 1.2.0; keep runtime peers unchanged.

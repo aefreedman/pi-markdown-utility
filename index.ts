@@ -6,6 +6,9 @@ import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-a
 import { Type } from "typebox";
 import {
   getMarkdownExecutableCandidates,
+  findWindowsPowerShell,
+  markdownCommandFailure,
+  MARKDOWN_EXEC_MAX_BUFFER,
   missingMarkdownExecutableError,
   type MarkdownExecutableKind,
 } from "./executables";
@@ -256,7 +259,7 @@ export default function markdownOutputTools(pi: ExtensionAPI) {
   async function execOpenCommand(command: string, args: string[], signal: AbortSignal | undefined, timeout: number) {
     // Keep filenames and executable overrides as literal argv values on every
     // platform. In particular, never route Markdown paths through cmd.exe.
-    return pi.exec(command, args, { timeout, signal });
+    return pi.exec(command, args, { timeout, signal, maxBuffer: MARKDOWN_EXEC_MAX_BUFFER });
   }
 
   async function findMarkdownExecutable(
@@ -266,6 +269,9 @@ export default function markdownOutputTools(pi: ExtensionAPI) {
     for (const executable of getMarkdownExecutableCandidates(kind)) {
       try {
         const result = await execOpenCommand(executable, ["--version"], signal, 5000);
+        if (result.truncated || result.killed) {
+          throw markdownCommandFailure(executable, result);
+        }
         if (result.code === 0) {
           return executable;
         }
@@ -273,7 +279,7 @@ export default function markdownOutputTools(pi: ExtensionAPI) {
         if (/\bENOENT\b|not found|cannot find/i.test(stderr ?? "")) {
           continue;
         }
-        throw new Error(stderr ? `${executable} failed: ${stderr}` : `${executable} failed with exit code ${result.code}`);
+        throw markdownCommandFailure(executable, result);
       } catch (error) {
         if (isNodeErrorWithCode(error, "ENOENT")) {
           continue;
@@ -288,17 +294,11 @@ export default function markdownOutputTools(pi: ExtensionAPI) {
   async function openInVsCode(absolutePath: string, signal?: AbortSignal): Promise<MarkdownOpenResult> {
     const executable = await findMarkdownExecutable("code", signal);
     const result = await execOpenCommand(executable, ["-g", absolutePath], signal, 5000);
-    if (result.code !== 0) {
-      const stderr = result.stderr?.trim();
-      throw new Error(stderr ? `${executable} failed: ${stderr}` : `${executable} failed with exit code ${result.code}`);
+    if (result.code !== 0 || result.truncated || result.killed) {
+      throw markdownCommandFailure(executable, result);
     }
 
     return { opener: "code" };
-  }
-
-  async function getWindowsPowerShellExecutable(signal?: AbortSignal): Promise<string> {
-    const result = await pi.exec("cmd.exe", ["/d", "/c", "where", "pwsh.exe"], { timeout: 2000, signal });
-    return result.code === 0 ? "pwsh.exe" : "powershell.exe";
   }
 
   async function openWithGlow(absolutePath: string, signal?: AbortSignal): Promise<MarkdownOpenResult> {
@@ -306,7 +306,7 @@ export default function markdownOutputTools(pi: ExtensionAPI) {
     const executable = await findMarkdownExecutable("glow", signal);
 
     if (process.platform === "win32") {
-      const shell = await getWindowsPowerShellExecutable(signal);
+      const shell = await findWindowsPowerShell(pi.exec.bind(pi), signal);
       const glowFileCommand = powershellEncodedCommand(`& ${powershellSingleQuote(executable)} --tui ${powershellSingleQuote(absolutePath)}`);
       await trySpawnDetached([
         {

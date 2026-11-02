@@ -9,6 +9,7 @@
     "pi-package"
   ],
   "files": [
+    "CHANGELOG.md",
     "index.ts",
     "executables.ts",
     "unwrap-markdown.ts",
@@ -23,7 +24,7 @@
     ]
   },
   "scripts": {
-    "test": "node tests/executables-validation.ts && node tests/unwrap-markdown-validation.ts && node tests/release-workflow-validation.mjs",
+    "test": "node tests/executables-validation.ts && node --import tsx tests/exec-validation.ts && node tests/unwrap-markdown-validation.ts && node tests/release-workflow-validation.mjs && node tests/host-validation.mjs",
     "unwrap": "tsx unwrap-markdown-cli.ts"
   },
   "peerDependencies": {
@@ -49,7 +50,7 @@
     }
   },
   "devDependencies": {
-    "@earendil-works/pi-coding-agent": "1.2.0",
+    "@earendil-works/pi-coding-agent": "1.5.0",
     "typebox": "^1.3.10"
   },
   "dependencies": {

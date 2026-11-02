@@ -1,4 +1,28 @@
 import path from "node:path";
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+
+// Version probes and GUI launchers should never produce large captured output.
+export const MARKDOWN_EXEC_MAX_BUFFER = 16 * 1024;
+type ExecResult = Awaited<ReturnType<ExtensionAPI["exec"]>>;
+
+export function markdownCommandFailure(command: string, result: ExecResult): Error {
+  const reason = result.truncated ? "output truncated at 16 KiB" : result.killed ? "command terminated (timeout or abort)" : `exit code ${result.code}`;
+  const stderr = result.stderr.trim();
+  return new Error(`${command} failed: ${reason}${stderr ? `; ${stderr}` : ""}`);
+}
+
+export async function findWindowsPowerShell(exec: ExtensionAPI["exec"], signal?: AbortSignal): Promise<string> {
+  try {
+    const result = await exec("cmd.exe", ["/d", "/c", "where", "pwsh.exe"], {
+      timeout: 2000, signal, maxBuffer: MARKDOWN_EXEC_MAX_BUFFER,
+    });
+    if (result.truncated || result.killed) throw markdownCommandFailure("PowerShell probe", result);
+    return result.code === 0 ? "pwsh.exe" : "powershell.exe";
+  } catch (error) {
+    if (error && typeof error === "object" && "code" in error && error.code === "ENOENT") return "powershell.exe";
+    throw error;
+  }
+}
 
 export type MarkdownExecutableKind = "code" | "glow";
 
