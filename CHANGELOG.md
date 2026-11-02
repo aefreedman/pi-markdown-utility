@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.4.2 - 2026-11-02
+
 ### Changed
 
 - Refresh the exact Pi validation dependency and lockfile to 1.5.0; retain optional wildcard host peers.
