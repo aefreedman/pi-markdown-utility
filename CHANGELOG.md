@@ -6,17 +6,14 @@
 
 ### Changed
 
-- Refresh the exact Pi validation dependency and lockfile to 1.5.0; retain optional wildcard host peers.
-- Include the root changelog in npm packages for Pi's default extension-update discovery.
+- Updated for Pi 1.5.0.
+- Include release notes in Pi's extension-update notices.
 
 ### Fixed
 
-- Bound opener and version/PowerShell probe output to 16 KiB; reject truncated or terminated results with useful stderr rather than treating them as successful or missing executables.
-- Fall back to Windows PowerShell when the discovery executable itself is missing.
-
-### Tests
-
-- Validate actual Pi host loading, tool-argument coercion and rejection before mutation dispatch, workspace guards, and opener/probe failure paths using only synthetic fixtures and exec/model stubs.
+- Report failed or interrupted opener commands instead of treating them as successful.
+- Handle oversized command output without mistaking it for a missing executable.
+- Fall back to Windows PowerShell when the executable-discovery command is unavailable.
 
 ## 0.4.1 - 2026-10-13
 
